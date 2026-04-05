@@ -2,13 +2,18 @@
 const OpenAI = require("openai");
 const express = require("express");
 const cors = require("cors");
-const mysql = require("mysql2");
 require("dotenv").config();
+const { createClient } = require("@supabase/supabase-js");
 
 // --- OpenAI setup ---
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
 });
+
+// --- Supabase setup ---
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_KEY; // usa la Secret Key
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 // --- Express setup ---
 const app = express();
@@ -17,40 +22,16 @@ const PORT = 3000;
 app.use(cors());
 app.use(express.json()); // permette di leggere JSON dal frontend
 
-// --- MySQL setup ---
-const db = mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    password: "",
-    database: "lookbook_db"
-});
-
-db.connect(err => {
-    if (err) {
-        console.error("Errore connessione DB:", err);
-    } else {
-        console.log("Connesso al DB MySQL!");
-
-        // --- Test: leggere tutti i prodotti ---
-        db.query("SELECT * FROM prodotti", (err, results) => {
-            if (err) {
-                console.error("Errore query:", err);
-            } else {
-                console.log("Prodotti nel DB:", results);
-            }
-        });
+// --- Rotta GET prodotti ---
+app.get("/prodotti", async (req, res) => {
+    try {
+        const { data, error } = await supabase.from("product").select("*");
+        if (error) throw error;
+        res.json(data);
+    } catch (err) {
+        console.error("Errore DB:", err);
+        res.status(500).json({ error: "Errore DB" });
     }
-});
-
-// --- Rotta GET per frontend ---
-app.get("/prodotti", (req, res) => {
-    db.query("SELECT * FROM prodotti", (err, results) => {
-        if (err) {
-            res.status(500).json({ error: "Errore nel DB" });
-        } else {
-            res.json(results);
-        }
-    });
 });
 
 // --- Rotta POST AI /valuta ---
@@ -83,33 +64,24 @@ Rispondi SOLO in JSON con questa struttura:
             ]
         });
 
-        const aiText = response.choices[0].message.content;
-        const data = JSON.parse(aiText);
+        const data = JSON.parse(response.choices[0].message.content);
 
-        // --- SALVATAGGIO NEL DB con tutti i campi ---
-        db.query(
-            `INSERT INTO prodotti 
-            (categoria, brand, stato, suggested_price, price_min, price_max, motivation) 
-            VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [
-                categoria,
-                brand,
-                stato,
-                data.suggested_price,
-                data.range.min,
-                data.range.max,
-                data.motivation
-            ],
-            (err, result) => {
-                if (err) {
-                    console.error("Errore inserimento DB:", err);
-                } else {
-                    console.log("Prodotto + valutazione AI salvati nel DB!");
-                }
-            }
-        );
+        // --- Inserimento in Supabase ---
+        const { error } = await supabase.from("product").insert([{
+            categoria,
+            brand,
+            stato,
+            suggested_price: data.suggested_price,
+            price_min: data.range.min,
+            price_max: data.range.max,
+            motivation: data.motivation
+        }]);
 
-        // --- Risposta al frontend ---
+        if (error) {
+            console.error("Errore inserimento DB:", error);
+            return res.status(500).json({ error: "Errore DB" });
+        }
+
         res.json(data);
 
     } catch (error) {
