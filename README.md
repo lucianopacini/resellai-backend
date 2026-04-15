@@ -1,74 +1,116 @@
-# 🧠 LookBook AI – Backend
+# 🧠 ResellAI Backend
 
-[![Backend Active](https://img.shields.io/badge/backend-active-brightgreen)](https://lookbook-backend-uxi1.onrender.com/)
+Backend API per il progetto ResellAI, un’applicazione che utilizza l’intelligenza artificiale per stimare il prezzo di capi di abbigliamento usati.
 
-Backend dell’applicazione **LookBook AI**, che utilizza l’intelligenza artificiale per stimare il prezzo di capi di abbigliamento usati e salva i dati su database.
+Il sistema utilizza OpenAI per generare le valutazioni e salva i risultati in un database Supabase.
 
 ---
 
 ## 🚀 Tecnologie utilizzate
-- Node.js  
-- Express  
-- OpenAI API  
-- Supabase (PostgreSQL)  
-- CORS  
+
+- Node.js
+- Express.js
+- OpenAI API (GPT-4o-mini)
+- Supabase (PostgreSQL)
+- dotenv
+- CORS
 
 ---
 
-## ⚙️ Funzionalità principali
+## 📦 Struttura del progetto
 
-### 📌 POST /valuta
-Riceve:
-- categoria  
-- brand  
-- stato  
-
-👉 Chiama l’AI per stimare:
-- prezzo suggerito  
-- range di prezzo  
-- motivazione  
-- consigli di vendita  
-
-👉 Salva i dati nel database Supabase  
-👉 Restituisce il risultato al frontend  
+server.js # Server principale
+.env # Variabili d’ambiente (non incluso nel repo)
+package.json # Dipendenze e script
 
 ---
 
-### 📌 GET /prodotti
-👉 Recupera tutti i prodotti salvati nel database  
+## ⚙️ Installazione
+npm install
 
 ---
 
-## 🗄️ Database
-- Database PostgreSQL su Supabase  
-- Tabella: `product`  
-- I dati vengono salvati in tempo reale  
-![Database Screenshot](./screenshot-supabase.png)
+## ▶️ Avvio in locale
+npm start
 
----
+Il server sarà disponibile su:
 
-## 🌐 Deploy & Link API
-- Backend deployato su Render  
-- API disponibile online: [Clicca qui per accedere al backend](https://lookbook-backend-uxi1.onrender.com/)  
-  *(Visita la root per un messaggio di test del backend)*
+http://localhost:3000
+🔐 Variabili d’ambiente
 
----
+Crea un file `.env` nella root del progetto:
 
-## 🔐 Variabili d’ambiente
+OPENAI_API_KEY=la_tua_api_key_openai
+SUPABASE_URL=il_tuo_url_supabase
+SUPABASE_KEY=la_tua_service_key_supabase
+PORT=3000
+📡 Endpoint API
+POST /valuta
 
-```env
-OPENAI_API_KEY=
-SUPABASE_URL=
-SUPABASE_KEY=
-PORT=
+Valuta un capo tramite AI e salva il risultato nel database.
+
+**Body della richiesta:**
+
+```json
+{
+  "categoria": "t-shirt",
+  "brand": "Nike",
+  "stato": "ottimo"
+}
+```
+
+**Risposta:**
+
+```json
+{
+  "suggested_price": 50,
+  "range": { "min": 30, "max": 70 },
+  "motivation": "Testo della motivazione...",
+  "selling_tips": ["Consiglio 1", "Consiglio 2"]
+}
 ```
 
 ---
 
-## 👨‍💻 Autore
-🦁 **Luciano Pacini**
+### GET /prodotti
+
+Restituisce tutte le valutazioni salvate nel database Supabase.
 
 ---
 
-## 📌 Note
-Questo progetto rappresenta una prima implementazione full stack con integrazione AI e persistenza dei dati.
+## 🗄️ Database (Supabase)
+
+Tabella: `product`
+
+Campi salvati:
+
+- categoria
+- brand
+- stato
+- suggested_price
+- price_min
+- price_max
+- motivation
+
+---
+
+## 🧠 Come funziona
+
+1. Il frontend invia i dati del prodotto  
+2. OpenAI genera una stima del prezzo  
+3. Il backend converte la risposta in JSON  
+4. I dati vengono salvati su Supabase  
+5. Il risultato viene restituito al frontend  
+
+---
+
+## 🌐 Deploy
+
+Backend deployato su Render  
+Il frontend comunica tramite variabile d’ambiente  
+
+---
+
+## ✨ Autore
+
+Luciano Pacini
