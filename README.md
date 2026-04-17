@@ -1,10 +1,12 @@
 # 🧠 ResellAI Backend
 
-Backend API per il progetto ResellAI, un’applicazione che utilizza l’intelligenza artificiale per stimare il prezzo di capi di abbigliamento usati.
+Backend API per ResellAI, un’applicazione full stack che utilizza l’intelligenza artificiale per stimare il prezzo di capi di abbigliamento usati.
 
-Il sistema utilizza OpenAI per generare le valutazioni e salva i risultati in un database Supabase.
+Il sistema integra OpenAI per la generazione delle valutazioni e Supabase per la persistenza dei dati.
 
----
+![Node](https://img.shields.io/badge/Node.js-18-green)
+![Express](https://img.shields.io/badge/Express-black)
+![Supabase](https://img.shields.io/badge/Supabase-blue)
 
 ## 🚀 Tecnologie utilizzate
 
@@ -18,10 +20,17 @@ Il sistema utilizza OpenAI per generare le valutazioni e salva i risultati in un
 ---
 
 ## 📦 Struttura del progetto
+“Architettura MVC semplificata”
 
-server.js # Server principale
-.env # Variabili d’ambiente (non incluso nel repo)
-package.json # Dipendenze e script
+/src
+  server.js
+  routes/
+  controllers/
+  services/
+  config/
+
+package.json
+.env
 
 ---
 
@@ -49,8 +58,11 @@ POST /valuta
 
 Valuta un capo tramite AI e salva il risultato nel database.
 
-**Body della richiesta:**
+### POST /valuta
 
+Valuta un capo tramite AI e salva il risultato nel database.
+
+Request Body:
 ```json
 {
   "categoria": "t-shirt",
@@ -59,14 +71,19 @@ Valuta un capo tramite AI e salva il risultato nel database.
 }
 ```
 
-**Risposta:**
-
+Response 200 OK:
 ```json
 {
   "suggested_price": 50,
-  "range": { "min": 30, "max": 70 },
+  "range": {
+    "min": 30,
+    "max": 70
+  },
   "motivation": "Testo della motivazione...",
-  "selling_tips": ["Consiglio 1", "Consiglio 2"]
+  "selling_tips": [
+    "Consiglio 1",
+    "Consiglio 2"
+  ]
 }
 ```
 
@@ -78,11 +95,22 @@ Restituisce tutte le valutazioni salvate nel database Supabase.
 
 ---
 
+## 🧪 Test rapido
+
+Puoi verificare che il backend sia attivo visitando:
+
+GET /
+
+Risposta:
+"Backend attivo su Render! 🚀"
+
+---
+
 ## 🗄️ Database (Supabase)
 
 Tabella: `product`
 
-Campi salvati:
+I dati vengono salvati in formato normalizzato:
 
 - categoria
 - brand
@@ -91,6 +119,11 @@ Campi salvati:
 - price_min
 - price_max
 - motivation
+
+📌 Nota:
+Il campo `range` restituito dall’API è derivato da `price_min` e `price_max` salvati nel database.
+
+![Supabase Table](./screenshot-supabase.png)
 
 ---
 
@@ -111,6 +144,47 @@ Il frontend comunica tramite variabile d’ambiente
 
 ---
 
+## 🌍 API Live
+
+https://resellai-backend.onrender.com
+
+---
+
+## 🔐 Sicurezza
+
+Le variabili sensibili (API Key e credenziali database) sono gestite tramite file `.env` e non vengono mai caricate su GitHub.
+
+---
+
+## ⚠️ Errori API
+
+In caso di errore, l’API restituisce una risposta standard:
+
+```json
+{
+  "error": "Descrizione dell’errore"
+}
+```
+
+Status HTTP utilizzati:
+
+- 200 → successo
+- 400 → input non valido
+- 500 → errore server
+
+---
+
+## 📊 Miglioramenti futuri
+
+caching delle risposte OpenAI (Redis)
+rate limiting per endpoint su /valuta
+autenticazione utenti (JWT)
+logging strutturato (Pino/Winston)
+validazione input con Zod
+
+---
+
 ## ✨ Autore
 
-Luciano Pacini
+Luciano Pacini 
+🦁Fullstack in rinascita
